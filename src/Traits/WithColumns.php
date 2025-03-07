@@ -12,7 +12,7 @@ trait WithColumns
     use ColumnConfiguration;
     use ColumnHelpers;
 
-    protected Collection $columns;
+    protected ?Collection $columns = null;
 
     protected ?Collection $prependedColumns;
 

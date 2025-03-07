@@ -20,40 +20,47 @@ trait ColumnHelpers
 
     protected function setupColumns(): void
     {
-        $this->columns = $this->columns
-            ->filter(fn ($column) => $column instanceof Column)
-            ->map(function (Column $column) {
-                $column->setTheme($this->getTheme())
-                    ->setHasTableRowUrl($this->hasTableRowUrl())
-                    ->setIsReorderColumn($this->getDefaultReorderColumn() == $column->getField());
+        if (!is_null($this->columns))
+        {
+            $this->columns = $this->columns
+                ->filter(fn ($column) => $column instanceof Column)
+                ->map(function (Column $column) {
+                    $column->setTheme($this->getTheme())
+                        ->setHasTableRowUrl($this->hasTableRowUrl())
+                        ->setIsReorderColumn($this->getDefaultReorderColumn() == $column->getField());
 
-                if ($column->hasFooter()) {
-                    $this->columnsWithFooter = true;
-                }
-                if ($column->hasSecondaryHeader()) {
-                    $this->columnsWithSecondaryHeader = true;
-                }
-
-                if ($column instanceof AggregateColumn) {
-                    if ($column->getAggregateMethod() == 'count' && $column->hasDataSource()) {
-                        $this->addExtraWithCount($column->getDataSource());
-                    } elseif ($column->getAggregateMethod() == 'sum' && $column->hasDataSource() && $column->hasForeignColumn()) {
-                        $this->addExtraWithSum($column->getDataSource(), $column->getForeignColumn());
-                    } elseif ($column->getAggregateMethod() == 'avg' && $column->hasDataSource() && $column->hasForeignColumn()) {
-                        $this->addExtraWithAvg($column->getDataSource(), $column->getForeignColumn());
+                    if ($column->hasFooter()) {
+                        $this->columnsWithFooter = true;
                     }
-                }
-
-                if ($column->hasField()) {
-                    if ($column->isBaseColumn()) {
-                        $column->setTable($this->getBuilder()->getModel()->getTable());
-                    } else {
-                        $column->setTable($this->getTableForColumn($column));
+                    if ($column->hasSecondaryHeader()) {
+                        $this->columnsWithSecondaryHeader = true;
                     }
-                }
 
-                return $column;
-            });
+                    if ($column instanceof AggregateColumn) {
+                        if ($column->getAggregateMethod() == 'count' && $column->hasDataSource()) {
+                            $this->addExtraWithCount($column->getDataSource());
+                        } elseif ($column->getAggregateMethod() == 'sum' && $column->hasDataSource() && $column->hasForeignColumn()) {
+                            $this->addExtraWithSum($column->getDataSource(), $column->getForeignColumn());
+                        } elseif ($column->getAggregateMethod() == 'avg' && $column->hasDataSource() && $column->hasForeignColumn()) {
+                            $this->addExtraWithAvg($column->getDataSource(), $column->getForeignColumn());
+                        }
+                    }
+
+                    if ($column->hasField()) {
+                        if ($column->isBaseColumn()) {
+                            $column->setTable($this->getBuilder()->getModel()->getTable());
+                        } else {
+                            $column->setTable($this->getTableForColumn($column));
+                        }
+                    }
+
+                    return $column;
+                });
+        }
+        else
+        {
+            $this->columns = collect();
+        }
 
         $this->hasRunColumnSetup = true;
     }
